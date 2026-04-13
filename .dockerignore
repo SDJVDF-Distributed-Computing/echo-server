@@ -1,8 +1,0 @@
-.git
-.gitignore
-.idea
-out/
-target/
-*.iml
-scripts/
-certs/
