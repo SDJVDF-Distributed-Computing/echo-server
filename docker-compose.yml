@@ -1,0 +1,9 @@
+services:
+  smp-server:
+    build: .
+    env_file: .env
+    ports:
+      - "${SMP_PORT}:${SMP_PORT}"
+    volumes:
+      - ./certs:/app/certs
+    restart: unless-stopped
