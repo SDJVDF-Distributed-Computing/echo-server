@@ -6,5 +6,11 @@ services:
     ports:
       - "${SMP_PORT:-8443}:${SMP_PORT:-8443}"
     volumes:
-      - ./certs:/app/certs:ro
+      - ./certs:/app/certs
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost ${SMP_PORT:-8443} || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

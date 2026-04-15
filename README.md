@@ -13,10 +13,11 @@ Clients connect over TLS, authenticate, then upload and download messages stored
 **Prerequisites:** Docker and Docker Compose.
 
 ```bash
-./generate_keystore.sh
-cp .env.example .env
+cp .env.example .env        # set SMP_KEYSTORE_PASSWORD
 docker compose up --build
 ```
+
+No cert pre-generation needed. On first startup the container checks for `certs/smp_keystore.jks` and generates a self-signed certificate automatically if it is missing.
 
 The pre-built image is published to the GitHub Container Registry on every push to `main`:
 
@@ -24,18 +25,38 @@ The pre-built image is published to the GitHub Container Registry on every push 
 ghcr.io/sdjvdf-distributed-computing/echo-server:main
 ```
 
-To run the published image instead of building locally, set `SMP_KEYSTORE_PASSWORD` in `.env` and run:
+Services that need the cert before they start should declare a `depends_on` condition — the `smp-server` healthcheck begins polling 15 s after startup:
 
-```bash
-docker compose up
+```yaml
+depends_on:
+  smp-server:
+    condition: service_healthy
 ```
 
-On first start, the server generates a self-signed TLS certificate and writes two files to `./certs/` on the host:
+The cert files written to `./certs/` on the host (shared via volume):
 
 | File | Used by       |
 |------|---------------|
 | `certs/smp_keystore.jks` | Java client   |
 | `certs/smpserver.cer` | Other clients |
+
+## Running the server locally (without Docker)
+
+**Prerequisites:** Java 21, Maven, `keytool` (bundled with the JDK).
+
+```bash
+# 1. Generate the keystore (one-time)
+./generate_keystore.sh
+
+# 2. Build
+mvn package -q
+
+# 3. Run
+export SMP_KEYSTORE_PASSWORD=changeit   # match what generate_keystore.sh used
+java -jar target/smp-server.jar
+```
+
+`SMP_PORT`, `SMP_KEYSTORE_PATH`, and `SMP_KEYSTORE_ALIAS` all have defaults (see [Environment variables](#environment-variables)), so only the password needs to be exported if you used the default.
 
 ## Running the Java client
 
@@ -60,7 +81,7 @@ Interactive commands: `login`, `upload <message>`, `download`, `logoff`, `quit`
 |----------|-------------------|------------------------------|
 | `SMP_PORT` | `8443`| Port the server listens on   |
 | `SMP_KEYSTORE_PATH` | `certs/smp_keystore.jks` | Path to the JKS keystore     |
-| `SMP_KEYSTORE_PASSWORD` | — | Keystore password (required) |
+| `SMP_KEYSTORE_PASSWORD` | `changeit` | Keystore password |
 | `SMP_KEYSTORE_ALIAS` | smpserver | Keystore alias (required)    |
 
 ## Protocol
