@@ -1,9 +1,10 @@
 services:
   smp-server:
     build: .
+    image: ghcr.io/sdjvdf-distributed-computing/echo-server:local
     env_file: .env
     ports:
-      - "${SMP_PORT}:${SMP_PORT}"
+      - "${SMP_PORT:-8443}:${SMP_PORT:-8443}"
     volumes:
-      - ./certs:/app/certs
+      - ./certs:/app/certs:ro
     restart: unless-stopped

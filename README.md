@@ -1,6 +1,6 @@
 # SMP Server
 
-A multithreaded TCP message server using a custom text protocol (SMP — Secure Message Protocol) over TLS. Built with Java 21 and Maven.
+A multithreaded TCP message server using a custom text protocol (SMP — Short Message Protocol) over TLS. Built with Java 21 and Maven.
 
 ## What it does
 
@@ -16,6 +16,18 @@ Clients connect over TLS, authenticate, then upload and download messages stored
 ./generate_keystore.sh
 cp .env.example .env
 docker compose up --build
+```
+
+The pre-built image is published to the GitHub Container Registry on every push to `main`:
+
+```
+ghcr.io/sdjvdf-distributed-computing/echo-server:main
+```
+
+To run the published image instead of building locally, set `SMP_KEYSTORE_PASSWORD` in `.env` and run:
+
+```bash
+docker compose up
 ```
 
 On first start, the server generates a self-signed TLS certificate and writes two files to `./certs/` on the host:
@@ -53,7 +65,7 @@ Interactive commands: `login`, `upload <message>`, `download`, `logoff`, `quit`
 
 ## Protocol
 
-SMP is a line-delimited text protocol over TLS/TCP. See [docs/PROTOCOL.md](docs/PROTOCOL.md) for the full spec including commands, response codes, and session state machine.
+SMP is a line-delimited text protocol over TLS/TCP.
 
 **Quick reference:**
 
